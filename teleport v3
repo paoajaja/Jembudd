@@ -1,0 +1,454 @@
+--[[
+    🔥 ZONE XD - UNIVERSAL SELECTOR V3 (ESP FIX) 🔥
+    COPYRIGHT: APIS 2026
+    FITUR: List player + Random + Minimize + ESP SUPER STABIL
+]]
+
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- ==================================================
+-- SETTINGS
+-- ==================================================
+local isMinimized = false
+local fullSize = UDim2.new(0, 260, 0, 380)
+local minimizedSize = UDim2.new(0, 260, 0, 50)
+
+-- ==================================================
+-- CREATE GUI UTAMA (SAMA KAYA SEBELUMNYA)
+-- ==================================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ZoneXD_V3"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.IgnoreGuiInset = true
+
+-- MAIN FRAME
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = fullSize
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -190)
+mainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 15)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 50, 50)
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+-- TITLE BAR
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 50)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+titleBar.BackgroundTransparency = 0.3
+titleBar.Parent = mainFrame
+
+local barCorner = Instance.new("UICorner")
+barCorner.CornerRadius = UDim.new(0, 15)
+barCorner.Parent = titleBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(0.6, 0, 1, 0)
+titleLabel.Position = UDim2.new(0.05, 0, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "⚡ ZONE XD V3"
+titleLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- MINIMIZE BUTTON
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0, 30, 0, 30)
+minBtn.Position = UDim2.new(1, -75, 0, 10)
+minBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+minBtn.Text = "🗕"
+minBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+minBtn.TextScaled = true
+minBtn.Font = Enum.Font.GothamBlack
+minBtn.BorderSizePixel = 0
+minBtn.Parent = titleBar
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 8)
+minCorner.Parent = minBtn
+
+-- CLOSE BUTTON
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -40, 0, 10)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBlack
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+end)
+
+-- ==================================================
+-- KONTEN UTAMA
+-- ==================================================
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -50)
+contentFrame.Position = UDim2.new(0, 0, 0, 50)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+contentFrame.ClipsDescendants = true
+
+-- LIST PLAYER
+local playerList = Instance.new("ScrollingFrame")
+playerList.Size = UDim2.new(0.9, 0, 0, 200)
+playerList.Position = UDim2.new(0.05, 0, 0, 10)
+playerList.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+playerList.BackgroundTransparency = 0.5
+playerList.BorderSizePixel = 0
+playerList.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerList.ScrollBarThickness = 5
+playerList.Parent = contentFrame
+
+local listCorner = Instance.new("UICorner")
+listCorner.CornerRadius = UDim.new(0, 10)
+listCorner.Parent = playerList
+
+local uiListLayout = Instance.new("UIListLayout")
+uiListLayout.Padding = UDim.new(0, 5)
+uiListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+uiListLayout.SortOrder = Enum.SortOrder.Name
+uiListLayout.Parent = playerList
+
+-- RANDOM BUTTON
+local randomButton = Instance.new("TextButton")
+randomButton.Size = UDim2.new(0.8, 0, 0, 45)
+randomButton.Position = UDim2.new(0.1, 0, 0, 225)
+randomButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+randomButton.Text = "🎲 TELEPORT RANDOM"
+randomButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+randomButton.TextScaled = true
+randomButton.Font = Enum.Font.GothamBlack
+randomButton.BorderSizePixel = 0
+randomButton.Parent = contentFrame
+
+local randomCorner = Instance.new("UICorner")
+randomCorner.CornerRadius = UDim.new(0, 15)
+randomCorner.Parent = randomButton
+
+-- INFO LABEL
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 0, 25)
+infoLabel.Position = UDim2.new(0, 0, 0, 280)
+infoLabel.BackgroundTransparency = 1
+infoLabel.Text = "Pilih player di atas atau klik RANDOM"
+infoLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+infoLabel.TextScaled = true
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.Parent = contentFrame
+
+-- ==================================================
+-- FUNGSI MINIMIZE
+-- ==================================================
+local function toggleMinimize()
+    isMinimized = not isMinimized
+    local targetSize = isMinimized and minimizedSize or fullSize
+    local tween = TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = targetSize})
+    tween:Play()
+    contentFrame.Visible = not isMinimized
+    minBtn.Text = isMinimized and "🗖" or "🗕"
+end
+
+minBtn.MouseButton1Click:Connect(toggleMinimize)
+
+-- ==================================================
+-- ESP SYSTEM (SUPER STABIL - FIX)
+-- ==================================================
+local espHolder = {}
+
+local function createESP(plr)
+    -- Hapus ESP lama kalo ada
+    if espHolder[plr] then
+        pcall(function()
+            espHolder[plr].billboard:Destroy()
+        end)
+        espHolder[plr] = nil
+    end
+    
+    -- Tunggu character ready
+    local char = plr.Character
+    if not char then return end
+    
+    -- Tunggu parts penting
+    local head = char:WaitForChild("Head", 5)
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    
+    if not head or not humanoid then return end
+    
+    -- BUAT BILLBOARD GUI
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ZoneXD_ESP_" .. plr.Name
+    billboard.Adornee = head
+    billboard.Size = UDim2.new(0, 150, 0, 45)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.ClipsDescendants = false
+    billboard.ResetOnSpawn = false
+    
+    -- PASTIKAN BILLBOARD DI CHARACTER
+    local success, err = pcall(function()
+        billboard.Parent = char
+    end)
+    
+    if not success then
+        billboard:Destroy()
+        return
+    end
+    
+    -- BACKGROUND (BIAR TEXT KEbaca)
+    local background = Instance.new("Frame")
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    background.BackgroundTransparency = 0.3
+    background.BorderSizePixel = 0
+    background.Parent = billboard
+    
+    -- NAME LABEL
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0, 20)
+    nameLabel.Position = UDim2.new(0, 0, 0, 2)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = plr.Name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = background
+    
+    -- HEALTH BAR BACKGROUND
+    local healthBg = Instance.new("Frame")
+    healthBg.Size = UDim2.new(0.9, 0, 0, 8)
+    healthBg.Position = UDim2.new(0.05, 0, 0, 25)
+    healthBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    healthBg.BorderSizePixel = 0
+    healthBg.Parent = background
+    
+    -- HEALTH BAR FILL
+    local healthFill = Instance.new("Frame")
+    healthFill.Name = "HealthFill"
+    healthFill.Size = UDim2.new(1, 0, 1, 0)
+    healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    healthFill.BorderSizePixel = 0
+    healthFill.Parent = healthBg
+    
+    -- HEALTH TEXT
+    local healthText = Instance.new("TextLabel")
+    healthText.Size = UDim2.new(1, 0, 0, 12)
+    healthText.Position = UDim2.new(0, 0, 0, 33)
+    healthText.BackgroundTransparency = 1
+    healthText.Text = math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
+    healthText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    healthText.TextScaled = true
+    healthText.Font = Enum.Font.Gotham
+    healthText.Parent = background
+    
+    -- Simpan data
+    espHolder[plr] = {
+        billboard = billboard,
+        healthFill = healthFill,
+        healthText = healthText,
+        humanoid = humanoid
+    }
+end
+
+-- Fungsi update ESP
+local function updateESP()
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= player then
+            -- Cek character
+            if v.Character then
+                -- Buat ESP kalo belum ada
+                if not espHolder[v] then
+                    createESP(v)
+                end
+                
+                -- Update data kalo ESP ada
+                if espHolder[v] and v.Character then
+                    local data = espHolder[v]
+                    local humanoid = v.Character:FindFirstChild("Humanoid")
+                    
+                    if humanoid and data.healthFill and data.healthText then
+                        local healthPercent = humanoid.Health / humanoid.MaxHealth
+                        
+                        -- Update health bar
+                        data.healthFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                        
+                        -- Update warna
+                        if healthPercent > 0.6 then
+                            data.healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                        elseif healthPercent > 0.3 then
+                            data.healthFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                        else
+                            data.healthFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                        end
+                        
+                        -- Update teks
+                        data.healthText.Text = math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
+                    end
+                end
+            else
+                -- Hapus ESP kalo character ilang
+                if espHolder[v] then
+                    pcall(function()
+                        espHolder[v].billboard:Destroy()
+                    end)
+                    espHolder[v] = nil
+                end
+            end
+        end
+    end
+end
+
+-- Update setiap frame (PASTI RENDER)
+RunService.RenderStepped:Connect(updateESP)
+
+-- Event saat character spawn
+game.Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)  -- Tunggu bentar biar load
+        createESP(plr)
+    end)
+end)
+
+-- Untuk player yang udah ada
+for _, v in pairs(game.Players:GetPlayers()) do
+    if v ~= player then
+        if v.Character then
+            v.CharacterAdded:Connect(function()
+                task.wait(1)
+                createESP(v)
+            end)
+        end
+    end
+end
+
+-- ==================================================
+-- TELEPORT FUNCTION (SAMA)
+-- ==================================================
+local function teleportToPlayer(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character then 
+        return false 
+    end
+    
+    local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetRoot then return false end
+    
+    player.Character.HumanoidRootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 5, 5)
+    
+    infoLabel.Text = "✅ TELEPORT KE " .. targetPlayer.Name
+    task.wait(2)
+    infoLabel.Text = "Pilih player di atas atau klik RANDOM"
+    
+    return true
+end
+
+-- ==================================================
+-- UPDATE PLAYER LIST
+-- ==================================================
+local function updatePlayerList()
+    for _, child in pairs(playerList:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+    
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= player then
+            local plrButton = Instance.new("TextButton")
+            plrButton.Size = UDim2.new(0.95, 0, 0, 35)
+            plrButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            plrButton.Text = plr.Name
+            plrButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            plrButton.TextScaled = true
+            plrButton.Font = Enum.Font.GothamBold
+            plrButton.Parent = playerList
+            
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0, 8)
+            btnCorner.Parent = plrButton
+            
+            plrButton.MouseButton1Click:Connect(function()
+                teleportToPlayer(plr)
+            end)
+            
+            plrButton.MouseEnter:Connect(function()
+                plrButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+            end)
+            
+            plrButton.MouseLeave:Connect(function()
+                plrButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            end)
+        end
+    end
+    
+    playerList.CanvasSize = UDim2.new(0, 0, 0, uiListLayout.AbsoluteContentSize.Y)
+end
+
+-- ==================================================
+-- RANDOM TELEPORT
+-- ==================================================
+randomButton.MouseButton1Click:Connect(function()
+    local targets = {}
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(targets, plr)
+        end
+    end
+    
+    if #targets > 0 then
+        local randomTarget = targets[math.random(1, #targets)]
+        teleportToPlayer(randomTarget)
+    else
+        infoLabel.Text = "❌ TIDAK ADA PLAYER LAIN"
+        task.wait(2)
+        infoLabel.Text = "Pilih player di atas atau klik RANDOM"
+    end
+end)
+
+-- ==================================================
+-- EVENT PLAYER MASUK/KELUAR
+-- ==================================================
+game.Players.PlayerAdded:Connect(updatePlayerList)
+game.Players.PlayerRemoving:Connect(updatePlayerList)
+
+task.wait(1)
+updatePlayerList()
+
+-- ==================================================
+-- NOTIFIKASI
+-- ==================================================
+print("🔥 ZONE XD V3 - ESP SUPER STABIL READY!")
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "ZONE XD V3",
+    Text = "ESP FIX! Pasti muncul, anti ilang!",
+    Duration = 5
+})
