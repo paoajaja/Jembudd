@@ -1,0 +1,281 @@
+--[[
+    🔥 ZONE XD - REWIND REVIVE 🔥
+    COPYRIGHT: APIS (USER 01) - ZONE XD V1
+    FITUR: Pencet tombol -> Karakter balik ke atas dengan gerakan mundur
+]]
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- ==================================================
+-- SETTINGS
+-- ==================================================
+local settings = {
+    reviveHeight = 100,           -- Tinggi tujuan
+    rewindSpeed = 0.5,            -- Kecepatan mundur (makin kecil makin lambat)
+    tableMinimized = false,
+    isRewinding = false
+}
+
+-- ==================================================
+-- CREATE GUI MINIMALIS
+-- ==================================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RewindRevive"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+
+-- MAIN FRAME
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 160)
+mainFrame.Position = UDim2.new(0, 20, 0.5, -80)
+mainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.ClipsDescendants = true
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 20)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(0, 200, 255)
+uiStroke.Thickness = 2
+uiStroke.Transparency = 0.4
+uiStroke.Parent = mainFrame
+
+-- TITLE
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Position = UDim2.new(0, 0, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "⏪ REWIND REVIVE"
+titleLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.Parent = mainFrame
+
+-- BIG REVIVE BUTTON
+local reviveButton = Instance.new("TextButton")
+reviveButton.Size = UDim2.new(0.8, 0, 0, 60)
+reviveButton.Position = UDim2.new(0.1, 0, 0, 55)
+reviveButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+reviveButton.Text = "🌀 REWIND"
+reviveButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+reviveButton.TextScaled = true
+reviveButton.Font = Enum.Font.GothamBlack
+reviveButton.Parent = mainFrame
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 30)
+btnCorner.Parent = reviveButton
+
+-- MINIMIZE BUTTON
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -40, 0, 10)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+minimizeBtn.Text = "🔼"
+minimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+minimizeBtn.TextScaled = true
+minimizeBtn.Font = Enum.Font.GothamBlack
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.Parent = mainFrame
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 8)
+minCorner.Parent = minimizeBtn
+
+-- STATUS TEXT
+local statusText = Instance.new("TextLabel")
+statusText.Size = UDim2.new(1, 0, 0, 25)
+statusText.Position = UDim2.new(0, 0, 1, -28)
+statusText.BackgroundTransparency = 1
+statusText.Text = "⏳ Siap rewind..."
+statusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+statusText.TextScaled = true
+statusText.Font = Enum.Font.Gotham
+statusText.Parent = mainFrame
+
+-- ==================================================
+-- REWIND FUNCTION (GERAK MUNDUR KAYA VIDEO)
+-- ==================================================
+local function rewindRevive()
+    -- Cegah spam
+    if settings.isRewinding then 
+        statusText.Text = "⚠️ Sedang rewind..."
+        return 
+    end
+    
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    local root = character:FindFirstChild("HumanoidRootPart")
+    
+    if not root or not humanoid or humanoid.Health <= 0 then return end
+    
+    settings.isRewinding = true
+    statusText.Text = "🌀 REWINDING..."
+    reviveButton.Text = "⏳..."
+    reviveButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    
+    -- Simpan posisi awal
+    local startY = root.Position.Y
+    local targetY = settings.reviveHeight
+    local distance = targetY - startY
+    
+    -- Matikan auto rotate selama rewind
+    humanoid.AutoRotate = false
+    
+    -- Efek visual mulai
+    for i = 1, 3 do
+        root.Transparency = 0.5
+        task.wait(0.03)
+        root.Transparency = 0
+        task.wait(0.03)
+    end
+    
+    -- REWIND EFFECT - GERAK MUNDUR
+    local steps = 30
+    for i = 1, steps do
+        if not root or not humanoid or humanoid.Health <= 0 then break end
+        
+        -- Hitung posisi baru (mundur)
+        local progress = i / steps
+        local newY = startY + (distance * progress)
+        
+        -- Set posisi
+        root.CFrame = CFrame.new(root.Position.X, newY, root.Position.Z)
+        
+        -- Efek rotasi (berputar kayak rewind)
+        root.Orientation = Vector3.new(0, root.Orientation.Y - 15, 0)
+        
+        -- Efek transparan (efek ghost)
+        root.Transparency = 0.3 + (0.5 * math.sin(i * 0.5))
+        
+        task.wait(0.03)  -- Delay kecil biar keliatan geraknya
+    end
+    
+    -- Pastikan sampai di target
+    if root then
+        root.CFrame = CFrame.new(root.Position.X, targetY, root.Position.Z)
+        root.Transparency = 0
+        root.Orientation = Vector3.new(0, root.Orientation.Y, 0)
+    end
+    
+    -- Balikin settings
+    if humanoid then
+        humanoid.AutoRotate = true
+    end
+    
+    -- Efek selesai
+    for i = 1, 5 do
+        if root then
+            root.Transparency = 0.3
+            task.wait(0.05)
+            root.Transparency = 0
+            task.wait(0.05)
+        end
+    end
+    
+    -- Selesai
+    settings.isRewinding = false
+    statusText.Text = "✅ Rewind selesai!"
+    reviveButton.Text = "🌀 REWIND"
+    reviveButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+    
+    -- Notifikasi
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "ZONE XD REWIND";
+        Text = "✅ Kamu sudah direwind!";
+        Duration = 2;
+    })
+end
+
+-- ==================================================
+-- BUTTON EVENTS
+-- ==================================================
+
+-- Revive button
+reviveButton.MouseButton1Click:Connect(rewindRevive)
+
+-- Hover effects
+reviveButton.MouseEnter:Connect(function()
+    if not settings.isRewinding then
+        reviveButton.BackgroundColor3 = Color3.fromRGB(255, 150, 0)
+        reviveButton.Size = UDim2.new(0.82, 0, 0, 63)
+    end
+end)
+
+reviveButton.MouseLeave:Connect(function()
+    if not settings.isRewinding then
+        reviveButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+        reviveButton.Size = UDim2.new(0.8, 0, 0, 60)
+    end
+end)
+
+-- Minimize button
+minimizeBtn.MouseButton1Click:Connect(function()
+    settings.tableMinimized = not settings.tableMinimized
+    
+    local targetSize = settings.tableMinimized and UDim2.new(0, 220, 0, 60) or UDim2.new(0, 220, 0, 160)
+    local tween = TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = targetSize})
+    tween:Play()
+    
+    -- Hide/show elements
+    titleLabel.Visible = not settings.tableMinimized
+    reviveButton.Visible = not settings.tableMinimized
+    statusText.Visible = not settings.tableMinimized
+    
+    minimizeBtn.Text = settings.tableMinimized and "🔽" or "🔼"
+end)
+
+-- ==================================================
+-- MONITOR JATUH (BUAT UPDATE STATUS)
+-- ==================================================
+RunService.Heartbeat:Connect(function()
+    local character = player.Character
+    if character then
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if root then
+            -- Update status berdasarkan posisi
+            if root.Position.Y < 10 then
+                statusText.Text = "⚠️ Kamu di bawah! Tekan REWIND"
+                statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
+                reviveButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            else
+                if not settings.isRewinding then
+                    statusText.Text = "✨ Aman. Tekan buat rewind"
+                    statusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    reviveButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================================
+-- NOTIFICATION START
+-- ==================================================
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "ZONE XD REWIND";
+    Text = "✅ Tekan tombol REWIND buat balik ke atas dengan efek mundur!";
+    Duration = 4;
+})
+
+print([[
+╔══════════════════════════════════════════════════╗
+║   🔥 ZONE XD - REWIND REVIVE 🔥                  ║
+║   ✅ Tekan tombol -> Balik ke atas               ║
+║   ✅ Efek gerak MUNDUR kayak video di-rewind     ║
+║   ✅ Ada efek puter-puter + transparan           ║
+║   👑 COPYRIGHT: APIS - ZONE XD V1                ║
+╚══════════════════════════════════════════════════╝
+]])
